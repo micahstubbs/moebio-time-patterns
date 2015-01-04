@@ -1,0 +1,5 @@
+financialsDate,effectiveTaxRate,earningsBeforeInterestAndTaxes,symbol,financialsYear,company,sector
+"2009-09-27",0.28557,7658,"AAPL",2009,"Apple","Information Technology"
+"2010-09-27",0.24417,18385,"AAPL",2010,"Apple","Information Technology"
+"2011-09-27",0.24216,33790,"AAPL",2011,"Apple","Information Technology"
+"2012-09-27",0.2516,55241,"AAPL",2012,"Apple","Information Technology"

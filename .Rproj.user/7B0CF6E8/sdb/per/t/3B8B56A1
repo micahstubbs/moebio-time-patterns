@@ -1,0 +1,16 @@
+{
+    "contents" : "require(Quandl)\nQuandl.auth(\"KQ6GeM7-azCpLj3UCwdQ\")\n\n# Set the working directory\nsetwd(\"~/workspace/d3-project-folder/moebio-time-patterns\")\n\nSP500 <- read.csv(file=\"SP500_Companies.csv\",head=TRUE,sep=\",\")\nsymbolList <- SP500$Symbol\n\n# some crude error handling by removing problem symbols from the list\nsymbolList <- symbolList[symbolList != \"BRK_B\"]\nsymbolList <- symbolList[symbolList != \"CTXS\"]\nsymbolList <- symbolList[symbolList != \"JOY\"]\nsymbolList <- symbolList[symbolList != \"NWSA\"]\nsymbolList <- symbolList[symbolList != \"NU\"]\nsymbolList <- symbolList[symbolList != \"PSX\"]\nsymbolList <- symbolList[symbolList != \"TRIP\"]\n\ndata <- data.frame(\"Date\" = c(),\n                   \"Effective Tax Rate\" = c(),\n                   \"Earnings Before Interest and Taxes\" = c(),\n                   \"symbol\" = c())\n\nfor(symbol in symbolList){\n  \n    effectiveTaxRate = try(Quandl(paste0(\"DMDRN/\", symbol, \"_EFF_TAX\")), silent=FALSE)\n    EBIT = try(Quandl(paste0(\"DMDRN/\", symbol, \"_EBIT\")), silent=FALSE)\n    tmp_data <- merge(effectiveTaxRate,EBIT,by=c(\"Date\"))\n    tmp_data$symbol <- symbol\n    data <- rbind(data, tmp_data)\n    \n    #plot the results of the API call as they are returned\n    #this shows the count of rows per symbol, where each row is a year\n    barplot(tail(table(data$symbol), 50))\n}\n\n# Write CSV in R\nwrite.csv(data, file = \"data.csv\",row.names=FALSE, na=\"\")\n\n",
+    "created" : 1420406454893.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3462799253",
+    "id" : "3B8B56A1",
+    "lastKnownWriteTime" : 1418523394,
+    "path" : "~/workspace/d3-project-folder/moebio-time-patterns/get_financial_data.R",
+    "project_path" : "get_financial_data.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

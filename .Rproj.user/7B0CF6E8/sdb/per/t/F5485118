@@ -1,0 +1,16 @@
+{
+    "contents" : "require(Quandl)\n\nsymbolList <- c(\"AMZN\",\"GOOG\", \"MSFT\", \"AAPL\", \"GLW\", \"HAL\")\n\ndata <- data.frame(\"Date\" = c(),\n                   \"Effective Tax Rate\" = c(),\n                   \"Earnings Before Interest and Taxes\" = c(),\n                   \"symbol\" = c())\n\nfor(symbol in symbolList){\n  effectiveTaxRate = Quandl(paste0(\"DMDRN/\", symbol, \"_EFF_TAX\"), trim_start=\"2003-01-01\", trim_end=\"2014-12-31\")\n  EBIT = Quandl(paste0(\"DMDRN/\", symbol, \"_EBIT\"), trim_start=\"2003-01-01\", trim_end=\"2014-12-31\")\n  tmp_data <- merge(effectiveTaxRate,EBIT,by=c(\"Date\"))\n  tmp_data$symbol <- symbol\n  data <- rbind(data, tmp_data)\n  bp <- barplot(tail(table(data$symbol), 50), xaxt=\"n\")\n  labs <- names(table(data$symbol))\n  text(x=bp, y=-1.25, labels=labs, xpd=TRUE, srt=0)\n}",
+    "created" : 1420406456737.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3368320004",
+    "id" : "F5485118",
+    "lastKnownWriteTime" : 1417926587,
+    "path" : "~/workspace/d3-project-folder/moebio-time-patterns/get_financial_data_small.R",
+    "project_path" : "get_financial_data_small.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
