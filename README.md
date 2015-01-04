@@ -12,6 +12,6 @@ progress so far - large plot
 ![large plot](002-scatter-apple.png)
 
 progress so far - small multiple plot
-![small multiple plot](002-scatter-path-apple.png)
+![small multiple plot](004-scatter-path-apple.png)
 
 built using [R](http://www.r-project.org/) and [d3js](http://d3js.org/)
