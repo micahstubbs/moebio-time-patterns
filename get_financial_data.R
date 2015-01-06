@@ -1,5 +1,5 @@
 require(Quandl)
-Quandl.auth("KQ6GeM7-azCpLj3UCwdQ")
+Quandl.auth("#######-#############")  # Your Quandl Auth Token Here
 
 # Set the working directory
 setwd("~/workspace/d3-project-folder/moebio-time-patterns")
