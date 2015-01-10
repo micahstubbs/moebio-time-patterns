@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<!-- Example based on http://fiddle.jshell.net/4xZwb/5/ -->
+<!-- from stackoverflow question http://stackoverflow.com/questions/21219557/how-to-draw-different-color-path-between-center-and-different-nodes-in-d3-js-->
+
+<style>
+svg {
+    width:100%; 
+    height:20em;
+}
+g.axis line, g.axis path{
+    shape-rendering:crispEdges;
+    fill:none; 
+    stroke:black;
+}
+g.x.axis g.tick text {
+    opacity:0;
+}
+g.x.axis g.tick:nth-of-type(5n+1) text{
+    opacity:1;
+}
+g.plot line {
+    stroke-width:2;
+    marker-start:url(#point);
+}
+marker#point{
+    stroke:blue;
+    stroke-width:0; /* make the points invisible */
+    fill:none;
+}
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+//D3 example:
+//drawing a line graph as individual lines
+//(instead of using d3.svg.line to create a path)
+//to allow separate formatting of each line
+//segment.
+
+//By Amelia Bellamy-Royds
+//CC-BY-3.0 creativecommons.org/licenses/by/3.
+
+//DATA variables and functions
+// load data
+function update(data) {
+  d3.csv("vis_data_small.csv", function(error, data) { 
+  // change string (from CSV) into number format
+  data.forEach(function(d) {
+    d.earningsBeforeInterestAndTaxes = +d.earningsBeforeInterestAndTaxes;
+    d.effectiveTaxRate = +d.effectiveTaxRate;
+  //    console.log(d);
+  });
+
+  lines = lines.data(data);
+  lines.enter().append("line");
+  lines.each(function(d,i){
+    var value = data.effectiveTaxRate;
+    //plotting value for current point      
+    
+    //find next point
+    var next = i+1; //x-position (just using index #)
+    var nextValue = data[next]; //y-position
+    
+    if (isNaN(nextValue)){
+      // there is no next value,
+      // so repeat this point as the end of line
+      //(line will have zero length)
+      next = i;
+      nextValue = value;
+    }
+        
+    d3.select(this)
+      .attr( //set coordinates:
+        {x1: xScale(i),
+         y1: yScale(value),
+         x2: xScale(next),
+         y2: yScale(nextValue)}
+        )
+      //Set styles for individual line segments
+      //e.g., based on whether value is increasing
+      //or decreasing, we can set colour red or black
+      .style("stroke", ( (value > nextValue) ?
+        "red" : "black" );
+      );    
+    });
+  } 
+}       
+    
+
+//*** INITIALIZATION ***//
+    
+var svg = d3.select("body").append("svg");
+    
+var svgStyles = window.getComputedStyle(svg[0][0]);
+var digits = /\d*/; //strip units from CSS length
+var margin = digits.exec(svgStyles["font-size"])*3;
+var plotHeight = Math.max(digits.exec(svgStyles["height"])-2*margin, margin);
+var plotWidth = Math.max(digits.exec(svgStyles["width"])-2*margin, margin);
+
+    //create a point marker to be used in line styles
+    //(it is added via the CSS)
+var point = svg.append("defs").append("marker")
+        .attr("id", "point")
+        .attr("viewBox", "-1.5 -1.5 3 3")
+        .append("circle").attr("r",1);
+    
+    //create scales and draw axes
+var xScale = d3.scale.ordinal()
+        .domain(d3.range(N))
+        .rangeBands([margin, plotWidth+margin]);
+var yScale = d3.scale.linear()
+        .domain([-1,1])
+        .range([margin, plotHeight+margin]);
+
+svg.append("g").attr("class", "x axis")
+    .attr("transform", "translate(0,"+ (plotHeight+margin) +")")
+    .call(d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+          );
+svg.append("g").attr("class", "y axis")
+    .attr("transform", "translate("+ margin+",0)")
+    .call(d3.svg.axis()
+            .scale(yScale)
+            .orient("left")
+            .ticks(5)
+            .tickFormat(d3.format("+0%"))
+          );
+    
+var lines = svg.append("g").attr("class", "plot").selectAll("line");
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
+<!-- Tooltip example from http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html -->
+
+<style>
+body {
+  font: 8px sans-serif; /* 11 */
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  /* stroke: #000; */
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 500 - margin.left - margin.right, // 960
+    height = 400 - margin.top - margin.bottom; // 500
+
+/* 
+ * value accessor - returns the value to encode for a given data object.
+ * scale - maps value to a visual display encoding, such as a pixel position.
+ * map function - maps from data value to display value
+ * axis - sets up axis
+ */ 
+
+// setup x 
+var xValue = function(d) { return d.earningsBeforeInterestAndTaxes;}, // data -> value
+    xScale = d3.scale.linear().range([0, width]), // value -> display
+    xMap = function(d) { return xScale(xValue(d));}, // data -> display
+    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+// setup y
+var yValue = function(d) { return d.effectiveTaxRate;}, // data -> value
+    yScale = d3.scale.linear().range([height, 0]), // value -> display
+    yMap = function(d) { return yScale(yValue(d));}, // data -> display
+    yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+// setup fill color
+var cValue = function(d) { return d.company;},
+    color = d3.scale.category10();
+
+// add the graph canvas to the body of the webpage
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// add the tooltip area to the webpage
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+//This is the accessor function 
+var lineFunction = d3.svg.line()
+                         .x(xMap)
+                         .y(yMap)
+                         .interpolate("linear");
+
+// load data
+d3.csv("vis_data_small.csv", function(error, data) {
+
+  // change string (from CSV) into number format
+  data.forEach(function(d) {
+    d.earningsBeforeInterestAndTaxes = +d.earningsBeforeInterestAndTaxes;
+    d.effectiveTaxRate = +d.effectiveTaxRate;
+//    console.log(d);
+  });
+
+  // don't want dots overlapping axis, so add in buffer to data domain
+  // buffer now scales with data
+  xScale.domain(
+    [
+    d3.min(data, xValue)-.3*d3.min(data, xValue), 
+    d3.max(data, xValue)+.3*d3.max(data, xValue)
+    ]);
+
+  yScale.domain(
+    [
+      d3.min(data, yValue)-.01*d3.min(data, yValue), 
+      d3.max(data, yValue)+.01*d3.max(data, yValue)
+    ]);
+
+  // x-axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Earnings Before Interest and Taxes $USDmm");
+
+  // y-axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Effective Tax Rate");
+
+/////////////////////////////////
+
+// improve this to calculate subsets dynamically
+// improve this to draw the arrows dynamically
+
+  // subset for a line between only two points
+  var subset_1 = [data[0], data[1]];
+  var subset_2 = [data[1], data[2]];
+  var subset_3 = [data[2], data[3]];
+
+  // draw line
+  var lineSegment = svg.append("path")
+    .attr("d", lineFunction(subset_1))
+    .attr("stroke", "blue")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    // select this class later to paint arrowheads
+    .attr("class", "segment")
+    .attr("marker-end", "url(#arrow_1)"); 
+
+  // draw line
+  var lineSegment = svg.append("path")
+    .attr("d", lineFunction(subset_2))
+    .attr("stroke", "purple")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("class", "segment")
+    .attr("marker-end", "url(#arrow_2)"); 
+
+  // draw line
+  var lineSegment = svg.append("path")
+    .attr("d", lineFunction(subset_3))
+    .attr("stroke", "red")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("class", "segment")
+    .attr("marker-end", "url(#arrow_3)"); 
+
+
+  function marker(id, color) {
+    d3.select("svg").append('defs')
+      .append('marker')
+      .attr("id", id)
+      .attr("refX", 12)
+      .attr("refY", 6)
+      .attr("markerUnits", 'userSpaceOnUse') 
+      .attr("markerWidth", 12)
+      .attr("markerHeight", 18)
+      .attr("fill", color)
+      .attr("orient", 'auto')
+      .append('path')
+      .attr("d", 'M 0 0 12 6 0 12 3 6');
+  }
+
+  var marker_1 = marker("arrow_1", "blue");
+  var marker_2 = marker("arrow_2", "purple");
+  var marker_3 = marker("arrow_3", "red");
+
+  // a way to add markers to all lines at once
+  // figure out how to vary the marker color while doing this
+  
+  // d3.selectAll("path.segment").attr("marker-end", "url(#Triangle)"); 
+
+/////////////////////////////////
+
+  // draw invisible dots for tooltip mouseover trigger areas
+  svg.selectAll(".dot")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", xMap)
+      .attr("cy", yMap)
+      .style("fill", function(d) { return color(cValue(d));})
+      .style("fill-opacity", 0) 
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", 0.9);
+          tooltip.html(d.financialsYear + "<br/> (" + xValue(d) 
+	        + ", " + yValue(d) + ")" + "<br/>" + d.company)
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 46) + "px");
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      });
+
+
+
+});
+
+
+</script>
+</body>
+</html>
