@@ -1,8 +1,13 @@
 require(Quandl)
-Quandl.auth("#######-#############")  # Your Quandl Auth Token Here
+
+# a nice guide to storing API keys as R environment variables
+# http://stat545-ubc.github.io/bit003_api-key-env-var.html
+#
+auth_token <- Sys.getenv("QUANDL_AUTH_TOKEN") 
+Quandl.auth(auth_token)  
 
 # Set the working directory
-setwd("~/workspace/d3-project-folder/moebio-time-patterns")
+setwd("~/workspace/d3-projects/moebio-time-patterns")
 
 SP500 <- read.csv(file="SP500_Companies.csv",head=TRUE,sep=",")
 symbolList <- SP500$Symbol
@@ -22,8 +27,10 @@ data <- data.frame("Date" = c(),
                    "symbol" = c())
 
 for(symbol in symbolList){
-  
+    
+    Sys.sleep(2)
     effectiveTaxRate = try(Quandl(paste0("DMDRN/", symbol, "_EFF_TAX")), silent=FALSE)
+    Sys.sleep(2)
     EBIT = try(Quandl(paste0("DMDRN/", symbol, "_EBIT")), silent=FALSE)
     tmp_data <- merge(effectiveTaxRate,EBIT,by=c("Date"))
     tmp_data$symbol <- symbol
